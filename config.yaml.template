@@ -1,0 +1,29 @@
+# Agent Autonomous Engine Configuration
+# Copy this file to config.yaml and fill in your values
+
+# Letta Server Connection
+letta:
+  api_key: "your-letta-api-key-here"
+  base_url: "https://app.letta.com"  # Your remote Letta server URL
+  timeout: 600  # Request timeout in seconds
+
+# Agent Configurations
+agents:
+  - name: "Agent 1"
+    agent_id: "your-letta-agent-id-1"
+    cycle_interval_minutes: 15  # Decision cycle frequency (in minutes)
+    activation_instruction: |
+      You are an autonomous agent. Review your goals and available tools.
+      Assess your current situation and make strategic decisions.
+      Execute actions using your registered tools.
+    enabled: true
+
+  - name: "Agent 2"
+    agent_id: "your-letta-agent-id-2"
+    cycle_interval_minutes: 30
+    activation_instruction: |
+      Time for autonomous decision-making. Review your context,
+      available capabilities, and current goals.
+      Choose strategic actions to take.
+    enabled: true
+

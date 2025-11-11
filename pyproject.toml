@@ -1,0 +1,46 @@
+[project]
+name = "agent-autonomous-engine"
+version = "0.1.0"
+description = "Autonomous decision cycle orchestrator for Letta agents"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "maxi", email = ""}
+]
+keywords = ["autonomous-agents", "letta", "ai", "automation", "multi-agent", "animus]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "letta-client>=0.1.0",
+    "pyyaml>=6.0.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/kahmahMaxi/agent-autonomous-engine"
+Documentation = "https://github.com/kahmahMaxi/agent-autonomous-engine#readme"
+Repository = "https://github.com/kahmahMaxi/agent-autonomous-engine"
+Issues = "https://github.com/kahmahMaxi/agent-autonomous-engine/issues"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
