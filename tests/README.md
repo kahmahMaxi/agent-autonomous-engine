@@ -17,6 +17,13 @@ pytest tests/test_engine.py
 pytest tests/test_integration.py
 ```
 
+### Run API Test Script
+
+```bash
+# Make sure engine is running with API first: python run_with_api.py
+python tests/test_api.py
+```
+
 ### Run with Verbose Output
 
 ```bash
@@ -41,10 +48,11 @@ pytest tests/test_config.py::test_load_config_success
 tests/
 ├── __init__.py          # Test package
 ├── conftest.py          # Pytest fixtures and configuration
-├── test_config.py      # Configuration loading tests
+├── test_config.py       # Configuration loading tests
 ├── test_agent_runner.py # Agent runner tests
 ├── test_engine.py       # Engine orchestration tests
-└── test_integration.py  # Integration tests
+├── test_integration.py  # Integration tests
+└── test_api.py          # API endpoint testing script
 ```
 
 ## Test Categories

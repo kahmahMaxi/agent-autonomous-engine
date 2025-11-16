@@ -51,16 +51,18 @@ class EngineConfig:
 class AgentRunner:
     """Orchestrates autonomous decision cycles for a single agent."""
     
-    def __init__(self, agent_config: AgentConfig, letta_client: Letta):
+    def __init__(self, agent_config: AgentConfig, letta_client: Letta, activity_storage=None):
         """
         Initialize agent runner.
         
         Args:
             agent_config: Agent configuration
             letta_client: Letta client instance
+            activity_storage: Optional ActivityStorage instance for logging activities
         """
         self.agent_config = agent_config
         self.letta = letta_client
+        self.activity_storage = activity_storage
         self.running = False
         self.stats = {
             "cycles_completed": 0,
@@ -112,6 +114,10 @@ class AgentRunner:
     
     def _activate_agent(self):
         """Activate agent for autonomous decision cycle."""
+        response = None
+        status = "success"
+        error_message = None
+        
         try:
             logger.info(f"[{self.agent_config.name}] Activating autonomous decision cycle...")
             
@@ -133,6 +139,8 @@ class AgentRunner:
             # Handle rate limit errors gracefully
             error_str = str(e)
             if "429" in error_str or "rate_limit" in error_str.lower() or "quota" in error_str.lower():
+                status = "rate_limit"
+                error_message = str(e)
                 logger.warning(
                     f"[{self.agent_config.name}] Rate limit/quota exceeded. "
                     f"Skipping this cycle. Check your OpenAI/LLM provider quota."
@@ -140,24 +148,47 @@ class AgentRunner:
                 # Don't count rate limits as errors - they're expected
                 # The agent will try again on next cycle
             else:
+                status = "error"
+                error_message = str(e)
                 logger.error(f"[{self.agent_config.name}] Decision cycle failed: {e}", exc_info=True)
                 self.stats["errors"] += 1
+        
+        finally:
+            # Store activity in database if storage is available
+            if self.activity_storage:
+                try:
+                    cycle_number = self.stats["cycles_completed"]
+                    self.activity_storage.store_activity(
+                        agent_id=self.agent_config.agent_id,
+                        agent_name=self.agent_config.name,
+                        cycle_number=cycle_number,
+                        response=response,
+                        status=status,
+                        error_message=error_message,
+                        metadata={
+                            "activation_instruction": self.agent_config.activation_instruction,
+                        }
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to store activity: {e}", exc_info=True)
 
 
 class AgentAutonomousEngine:
     """Main engine that runs multiple agents."""
     
-    def __init__(self, config: EngineConfig):
+    def __init__(self, config: EngineConfig, activity_storage=None):
         """
         Initialize engine.
         
         Args:
             config: Engine configuration
+            activity_storage: Optional ActivityStorage instance for logging activities
         """
         self.config = config
         self.running = False
         self.agent_runners: Dict[str, AgentRunner] = {}
         self.agent_threads: Dict[str, threading.Thread] = {}
+        self.activity_storage = activity_storage
         
         # Initialize Letta client
         client_params = {
@@ -212,7 +243,7 @@ class AgentAutonomousEngine:
         
         for agent_config in agents_to_run:
             try:
-                runner = AgentRunner(agent_config, self.letta)
+                runner = AgentRunner(agent_config, self.letta, self.activity_storage)
                 self.agent_runners[agent_config.agent_id] = runner
                 
                 # Start agent in separate thread
@@ -385,8 +416,18 @@ def main():
         # Load configuration
         config = load_config(args.config)
         
+        # Initialize activity storage (optional - only if API is enabled)
+        activity_storage = None
+        if os.getenv('ENABLE_ACTIVITY_STORAGE', 'true').lower() == 'true':
+            try:
+                from database import ActivityStorage
+                activity_storage = ActivityStorage()
+                logger.info("Activity storage enabled")
+            except Exception as e:
+                logger.warning(f"Failed to initialize activity storage: {e}. Activities will not be stored.")
+        
         # Create engine
-        engine = AgentAutonomousEngine(config)
+        engine = AgentAutonomousEngine(config, activity_storage=activity_storage)
         
         if args.status:
             engine.print_status()

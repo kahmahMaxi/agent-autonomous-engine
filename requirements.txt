@@ -1,6 +1,14 @@
 letta-client>=0.1.0
 pyyaml>=6.0.0
 rich>=13.0.0
+sqlalchemy>=2.0.0
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+requests>=2.31.0  # For API testing
+
+# PostgreSQL support (optional - only needed for production/PostgreSQL)
+# Install separately if needed: pip install psycopg2-binary
+# psycopg2-binary>=2.9.0
 
 # Testing (optional)
 pytest>=7.0.0
