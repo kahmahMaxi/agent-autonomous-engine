@@ -64,8 +64,8 @@ def main():
     parser.add_argument(
         "--api-port",
         type=int,
-        default=8000,
-        help="API server port (default: 8000)",
+        default=int(os.getenv("PORT", "8000")),  # Use Railway's PORT env var
+        help="API server port (default: 8000 or PORT env var)",
     )
     parser.add_argument(
         "--no-api",
@@ -74,6 +74,12 @@ def main():
     )
     
     args = parser.parse_args()
+    
+    # Check environment variable for API enablement (Railway-friendly)
+    # If API_ENABLED is set to "false", disable API even if --no-api wasn't passed
+    api_enabled_env = os.getenv("API_ENABLED", "true").lower()
+    if api_enabled_env == "false":
+        args.no_api = True
     
     # Setup logging
     from rich.logging import RichHandler
@@ -114,6 +120,9 @@ def main():
             console.print(f"\n[bold cyan]🌐 API Server running on http://{args.api_host}:{args.api_port}[/bold cyan]")
             console.print(f"[dim]   Endpoints: /api/activities, /api/agents, /api/stats/{{agent_id}}[/dim]\n")
             time.sleep(1)  # Give API server a moment to start
+        elif args.no_api:
+            console.print(f"\n[bold yellow]⚙️  Running in engine-only mode (API disabled)[/bold yellow]")
+            console.print(f"[dim]   Set API_ENABLED=true to enable the API server[/dim]\n")
         
         # Start engine (this will block until interrupted)
         engine.start(agent_ids=args.agents)

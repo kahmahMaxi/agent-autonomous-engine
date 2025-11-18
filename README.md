@@ -388,6 +388,15 @@ Engine logs all activations, decisions, and outcomes:
 
 ## 🚢 Deployment
 
+### Railway Deployment
+
+For deploying to Railway, see **[RAILWAY_DEPLOYMENT.md](RAILWAY_DEPLOYMENT.md)** for complete instructions.
+
+The engine supports Railway deployment with environment variable-based configuration:
+- Config is generated from env vars at startup (no `config.yaml` in git)
+- Supports multiple agents via `AGENT_1_*`, `AGENT_2_*`, etc. variables
+- Automatically uses Railway's `PORT` environment variable
+
 ### Local Development
 
 ```bash
