@@ -19,7 +19,16 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import yaml
-from letta_client import Letta, MessageCreate
+from letta_client import Letta
+# Try importing MessageCreate from different locations for compatibility
+try:
+    from letta_client import MessageCreate
+except ImportError:
+    try:
+        from letta_client.types.message_create import MessageCreate
+    except ImportError:
+        # Fallback: construct message dict directly
+        MessageCreate = None
 from rich.console import Console
 from rich.table import Table
 
@@ -123,7 +132,11 @@ class AgentRunner:
             
             # Activate agent with instruction for decision-making
             # Letta handles tool execution, memory retrieval, and strategic planning
-            message_data = [MessageCreate(role="user", content=self.agent_config.activation_instruction)]
+            if MessageCreate is not None:
+                message_data = [MessageCreate(role="user", content=self.agent_config.activation_instruction)]
+            else:
+                # Fallback: construct message dict directly
+                message_data = [{"role": "user", "content": self.agent_config.activation_instruction}]
             
             response = self.letta.agents.messages.create(
                 agent_id=self.agent_config.agent_id,
